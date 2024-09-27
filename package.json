@@ -4,19 +4,18 @@
   "description": "Chrome extension to revert the Twitter UI to the pre-Musk era",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "rollup -c rollup.config.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lesbiancatgirl/twitter-revert-rebrand.git"
+    "url": "git+https://github.com/exieneko/twitter-revert-rebrand.git"
   },
-  "author": "lesbiancatgirl",
+  "author": "exieneko",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lesbiancatgirl/twitter-revert-rebrand/issues"
+    "url": "https://github.com/exieneko/twitter-revert-rebrand/issues"
   },
-  "homepage": "https://github.com/lesbiancatgirl/twitter-revert-rebrand#readme",
+  "homepage": "https://github.com/exieneko/twitter-revert-rebrand#readme",
   "devDependencies": {
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
