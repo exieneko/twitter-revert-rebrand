@@ -7,12 +7,12 @@ module.exports = {
         content: 'src/content.ts'
     },
     output: {
-        dir: 'dist',
+        dir: 'dist/twitter-revert-rebrand',
         format: 'esm'
     },
     plugins: [
         typescript(),
-        copy({ targets: [{ src: 'public/*', dest: 'dist' }] }),
+        copy({ targets: [{ src: 'public/*', dest: 'dist/twitter-revert-rebrand' }] }),
         terser()
     ]
 };
