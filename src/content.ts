@@ -1,36 +1,60 @@
-function waitForElement<T extends HTMLElement>(selectors: string[], callback: (element: T) => void) {
-    function doTheThing() {
-        selectors.forEach(selector => {
+const waitForElement = <T extends HTMLElement>(selectors: string[], callback: (element: T) => void) => {
+    const doTheThing = () => {
+        for (const selector of selectors) {
             const element = document.querySelector<T>(selector);
+
             if (element) {
                 callback(element);
             }
-        });
-    }
+        }
+    };
 
     doTheThing();
     new MutationObserver(doTheThing).observe(document.body, { childList: true, subtree: true });
-}
+};
 
-function waitForElements<T extends HTMLElement>(selectors: string[], callback: (element: T) => void) {
-    function doTheThing() {
-        selectors.forEach(selector => {
+const waitForElements = <T extends HTMLElement>(selectors: string[], callback: (element: T) => void) => {
+    const doTheThing = () => {
+        for (const selector of selectors) {
             const elements = document.querySelectorAll<T>(selector);
-            elements.forEach(element => callback(element));
-        });
-    }
+
+            for (const element of elements) {
+                callback(element);
+            }
+        }
+    };
 
     doTheThing();
     new MutationObserver(doTheThing).observe(document.body, { childList: true, subtree: true });
-}
+};
 
-function replaceText(element: HTMLElement, findValue: string, replaceValue: string) {
-    if (element.textContent?.includes(findValue)) {
-        element.innerHTML = element.innerHTML?.replace(findValue, replaceValue);
+const watchElement = <T extends HTMLElement>(selectors: string[], callback: (element: T) => boolean | void) => {
+    let interval = setInterval(() => {
+        for (const selector of selectors) {
+            const element = document.querySelector<T>(selector);
+
+            if (!element) {
+                continue;
+            }
+
+            if (callback(element)) {
+                clearInterval(interval);
+            }
+        }
+    }, 50);
+};
+
+const replaceText = (element: HTMLElement, findValue: string | RegExp, replaceValue: string) => {
+    if (!element.textContent || !element.innerHTML) {
+        return;
     }
-}
 
-function replaceImage(element: HTMLElement, imagePath: string, size: number) {
+    if (typeof findValue === 'string' ? element.textContent.includes(findValue) : findValue.test(element.textContent)) {
+        element.innerHTML = element.innerHTML.replace(findValue, replaceValue);
+    }
+};
+
+const replaceImage = (element: HTMLElement, imagePath: string, size: number) => {
     if (element.classList.contains('twitter-icon')) {
         return;
     }
@@ -49,7 +73,7 @@ function replaceImage(element: HTMLElement, imagePath: string, size: number) {
 
         element.classList.add('twitter-icon');
     });
-}
+};
 
 
 
@@ -57,19 +81,24 @@ if (window.location.hostname === 'x.com') {
     window.location.href = `https://twitter.com${window.location.pathname}?mx=1`;
 }
 
-waitForElement<HTMLTitleElement>(['title' /* title */ ], element => {
+watchElement<HTMLTitleElement>(['title' /* title */ ], element => {
+    if (element.text === 'X') {
+        element.text = 'Twitter';
+        return;
+    }
+
     const values = {
-        'Posts / X': 'Tweets / Twitter',
-        'post / X': 'Tweet / Twitter',
-        ' on X': ' on Twitter',
-        ' / X': ' / Twitter',
-        'repost': 'Retweet',
-        'Quotes': 'Quote Tweets'
+        '/ Twitter': /\/ X$/,
+        'on Twitter': /(?<=.*)\bon X\b(?=: ".*" \/ (Twitter|X)$)/,
+        'Retweeted': /(?<=Users.*)\breposted\b(?=.*\/ (Twitter|X)$)/,
+        'Quote Tweets': /^Quotes(?= of this (post|Tweet) \/ (Twitter|X)$)/,
+        'Tweet': /(?<=(Users|Quote Tweets).*)\bpost\b(?=.*\/ (Twitter|X)$)/,
+        'Tweets': /^Posts(?= \/ (Twitter|X)$)/
     };
 
-    Object.entries(values).forEach(([key, value]) => {
-        replaceText(element, key, value);
-    });
+    for (const [key, value] of Object.entries(values)) {
+        replaceText(element, value, key);
+    }
 });
 
 waitForElement<HTMLAnchorElement>(['[rel~="icon"]' /* favicon */ ], element => {
@@ -85,7 +114,7 @@ waitForElement(['[aria-label="X"] svg' /* sidebar icon */ ], element => {
 });
 
 waitForElements(['[data-testid="socialContext"]' /* retweeted text */ ], element => {
-    replaceText(element, 'reposted', 'Retweeted');
+    replaceText(element, /\breposted$/, 'Retweeted');
 });
 
 waitForElement([
@@ -94,7 +123,7 @@ waitForElement([
     '[data-testid="pillLabel"] span span span', // show new tweets popup
     '[data-testid="notification"] span span', // notification title (before username)
     '[dir="ltr"] div ~ span span', // notification title (after username)
-    '.public-DraftEditorPlaceholder-inner', // reply placeholder
+    '.public-DraftEditorPlaceholder-inner' // reply placeholder
 ], element => {
     replaceText(element, 'post', 'Tweet');
     replaceText(element, 'Post', 'Tweet');
@@ -115,22 +144,20 @@ waitForElement(['[aria-label="Home timeline"] h2 ~ div' /* tweet counter */ ], e
     } else if (tweets < 10_000) {
         element.textContent = `${tweets.toString().slice(0, 1)},${tweets.toString().slice(1)} Tweets`;
     } else if (tweets < 1_000_000) {
-        const formattedNumber = (tweets / 1000).toFixed(1)
+        const formattedNumber = (tweets / 1000).toFixed(1);
         element.textContent = `${formattedNumber.endsWith('.0') ? (tweets / 1000).toFixed(0) : formattedNumber}K Tweets`;
     } else {
-        const formattedNumber = (tweets / 1_000_000).toFixed(1)
+        const formattedNumber = (tweets / 1_000_000).toFixed(1);
         element.textContent = `${formattedNumber.endsWith('.0') ? (tweets / 1_000_000).toFixed(0) : formattedNumber}M Tweets`;
     }
 });
 
 waitForElement(['[data-testid="cellInnerDiv"] span' /* show new tweets button */ ], element => {
-    if (element.textContent?.startsWith('Show ') && element.textContent.endsWith(' posts')) {
-        replaceText(element, 'posts', 'Tweets');
-    }
+    replaceText(element, /\bposts$/, 'Tweets');
 });
 
 waitForElements(['[data-testid="trend"] > div > div:nth-child(3) > span' /* trending tweets */ ], element => {
-    replaceText(element, 'post', 'Tweet');
+    replaceText(element, /\bposts$/, 'Tweets');
 });
 
 waitForElements(['h2 > span' /* heading */ ], element => {
@@ -161,13 +188,9 @@ waitForElements(['[role="menuitem"] span' /* menu items */ ], element => {
         element.textContent = 'Quote Tweet';
     }
 
-    if (element.textContent === 'Repost') {
-        element.textContent = 'Retweet';
-    }
-
-    replaceText(element, ' repost', ' Retweet');
-    replaceText(element, ' Quotes', ' Quote Tweets');
-    replaceText(element, ' post', ' Tweet');
+    replaceText(element, /\b[rR]epost\b/, 'Retweet');
+    replaceText(element, /\bQuotes\b/, 'Quote Tweets');
+    replaceText(element, /\bpost$/, 'Tweet');
 });
 
 waitForElement([
