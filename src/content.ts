@@ -44,6 +44,10 @@ const watchElement = <T extends HTMLElement>(selectors: string[], callback: (ele
     }, 50);
 };
 
+const getColor = () => {
+    return document.querySelector<HTMLElement>('[href="/i/keyboard_shortcuts"]')?.style.color || '#1d9bf0';
+};
+
 const replaceText = (element: HTMLElement, findValue: string | RegExp, replaceValue: string) => {
     if (!element.textContent || !element.innerHTML) {
         return;
@@ -69,7 +73,7 @@ const replaceImage = (element: HTMLElement, imagePath: string, size: number) => 
         element.setAttribute('viewBox', svg?.getAttribute('viewBox') || '0 0 16 16');
         element.style.width = `${size}px`;
         element.style.height = `${size}px`;
-        element.style.fill = document.querySelector<HTMLElement>('[data-testid="SideNav_NewTweet_Button"]')?.style.backgroundColor || '#1d9bf0';
+        element.style.fill = getColor();
 
         element.classList.add('twitter-icon');
     });
@@ -118,8 +122,8 @@ waitForElements(['[data-testid="socialContext"]' /* retweeted text */ ], element
 });
 
 waitForElement([
-    '[data-testid="SideNav_NewTweet_Button"] span span span', // sidebar tweet button
-    '[data-testid="toolBar"] > div span span', // inline tweet button
+    '[data-testid="SideNav_NewTweet_Button"] span span span', // sidebar tweet button text
+    '[data-testid="tweetButtonInline"] span span', // inline tweet button text
     '[data-testid="pillLabel"] span span span', // show new tweets popup
     '[data-testid="notification"] span span', // notification title (before username)
     '[dir="ltr"] div ~ span span', // notification title (after username)
@@ -127,6 +131,21 @@ waitForElement([
 ], element => {
     replaceText(element, 'post', 'Tweet');
     replaceText(element, 'Post', 'Tweet');
+});
+
+watchElement([
+    '[data-testid="SideNav_NewTweet_Button"] span span span', // sidebar tweet button text
+    '[data-testid="tweetButtonInline"] span span' // inline tweet button text
+], element => {
+    element.style.color = '#ffffff';
+});
+
+watchElement([
+    '[data-testid="SideNav_NewTweet_Button"]', // sidebar tweet button
+    '[data-testid="tweetButtonInline"]' // inline tweet button
+], element => {
+    element.classList.remove('r-jc7xae');
+    element.style.backgroundColor = getColor();
 });
 
 waitForElement(['[data-testid="cellInnerDiv"] span' /* show new tweets button */ ], element => {
