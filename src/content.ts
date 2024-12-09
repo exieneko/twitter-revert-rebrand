@@ -113,8 +113,19 @@ waitForElement(['#placeholder > svg' /* loading icon */ ], element => {
     replaceImage(element, 'images/twitter.svg', 64);
 });
 
-waitForElement(['[aria-label="X"] svg' /* sidebar icon */ ], element => {
+waitForElement(['[aria-label="X"] svg' /* navbar icon */ ], element => {
     replaceImage(element, 'images/twitter.svg', 32);
+});
+
+waitForElements<HTMLElement>([
+    'header nav[aria-label="Primary"] > a', // navbar items
+    '#layers [data-testid="Dropdown"] > div > div > a' // navbar dropdown items
+], element => {
+    const disallowedLinks = ['/i/grok', '/jobs', '/i/premium_sign_up', '/i/verified-orgs-signup', '/i/monetization', 'https://ads.twitter.com/?ref=gl-tw-tw-twitter-ads-rweb', '/i/spaces/start'];
+
+    if (element.style.display !== 'none' && disallowedLinks.includes(element.getAttribute('href') || '')) {
+        element.style.display = 'none';
+    }
 });
 
 waitForElements(['[data-testid="socialContext"]' /* retweeted text */ ], element => {
