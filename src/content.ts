@@ -200,6 +200,10 @@ waitForElements(['[role="menuitem"] span' /* menu items */ ], element => {
     replaceText(element, /\bpost$/, 'Tweet');
 });
 
+waitForElements(['article div:has(> button[aria-label="Grok actions"])' /* grok button */ ], element => {
+    element.remove();
+});
+
 waitForElement([
     '[data-testid="empty_state_header_text"] span', // tweet engagements empty (header)
     '[data-testid="empty_state_body_text"] span' // tweet engagements empty (body)
