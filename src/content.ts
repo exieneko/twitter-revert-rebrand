@@ -218,3 +218,7 @@ waitForElement([
 waitForElement<HTMLInputElement>(['[placeholder="Search"]' /* search bar placeholder */ ], element => {
     element.placeholder = 'Search Twitter';
 });
+
+waitForElement(['div:has(> div > [aria-label="Subscribe to Premium"])' /* sidebar twitter blue ad */ ], element => {
+    element.remove();
+});
